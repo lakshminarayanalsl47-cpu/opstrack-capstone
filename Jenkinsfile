@@ -38,12 +38,24 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify JAR Artifact') {
+            steps {
+                sh '''
+                    echo "Checking generated JAR..."
+                    test -f target/opstrack-0.0.1-SNAPSHOT.jar
+                    ls -lh target/opstrack-0.0.1-SNAPSHOT.jar
+                '''
+            }
+        }
     }
 
     post {
         always {
-            junit allowEmptyResults: true,
-                  testResults: '**/target/surefire-reports/*.xml'
+            junit(
+                allowEmptyResults: true,
+                testResults: '**/target/surefire-reports/*.xml'
+            )
         }
 
         success {
@@ -53,10 +65,11 @@ pipeline {
             )
 
             echo 'Pipeline completed successfully.'
+            echo 'JAR artifact is archived in Jenkins.'
         }
 
         failure {
-            echo 'Pipeline failed. Check the Console Output for details.'
+            echo 'Pipeline failed. Check the Console Output.'
         }
 
         cleanup {
