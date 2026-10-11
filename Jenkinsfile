@@ -18,6 +18,18 @@ pipeline {
                 sh './mvnw clean verify'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        ./mvnw sonar:sonar \
+                          -Dsonar.projectKey=opstrack \
+                          -Dsonar.projectName=OpsTrack
+                    '''
+                }
+            }
+        }
     }
 
     post {
@@ -25,7 +37,7 @@ pipeline {
             junit allowEmptyResults: true,
                  testResults: '**/target/surefire-reports/*.xml'
 
-            archiveArtifacts artifacts: 'target/*.jar',
+            archiveArtifacts artifacts: '**/target/*.jar',
                              allowEmptyArchive: true
         }
     }
