@@ -4,6 +4,7 @@ pipeline {
 
     options {
         timestamps()
+        skipDefaultCheckout(true)
     }
 
     stages {
@@ -22,11 +23,18 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
-                        -Dsonar.projectKey=opstrack \
-                        -Dsonar.projectName=OpsTrack
-                    '''
+                    withCredentials([
+                        string(
+                            credentialsId: 'sonarqube-token',
+                            variable: 'SONAR_TOKEN'
+                        )
+                    ]) {
+                        sh '''
+                            ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
+                              -Dsonar.projectKey=opstrack \
+                              -Dsonar.projectName=OpsTrack
+                        '''
+                    }
                 }
             }
         }
@@ -35,10 +43,24 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true,
-                 testResults: '**/target/surefire-reports/*.xml'
+                  testResults: '**/target/surefire-reports/*.xml'
+        }
 
-            archiveArtifacts artifacts: '**/target/*.jar',
-                             allowEmptyArchive: true
+        success {
+            archiveArtifacts(
+                artifacts: 'target/*.jar',
+                fingerprint: true
+            )
+
+            echo 'Pipeline completed successfully.'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the Console Output for details.'
+        }
+
+        cleanup {
+            echo 'Pipeline execution finished.'
         }
     }
 }
