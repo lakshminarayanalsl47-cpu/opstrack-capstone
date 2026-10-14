@@ -2,9 +2,13 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-        skipDefaultCheckout(true)
+    tools {
+        jdk 'JDK21'
+    }
+
+    environment {
+        SONAR_PROJECT_KEY = 'opstrack'
+        SONAR_PROJECT_NAME = 'OpsTrack'
     }
 
     stages {
@@ -16,63 +20,57 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                sh './mvnw clean verify'
+                sh '''
+                    chmod +x mvnw
+                    ./mvnw clean verify
+                '''
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true,
+                          testResults: '**/target/surefire-reports/*.xml'
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    withCredentials([
-                        string(
-                            credentialsId: 'sonarqube-token',
-                            variable: 'SONAR_TOKEN'
-                        )
-                    ]) {
-                        sh '''
-                            ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
-                              -Dsonar.projectKey=opstrack \
-                              -Dsonar.projectName=OpsTrack
-                        '''
-                    }
+                    sh '''
+                        ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                          -Dsonar.projectName=${SONAR_PROJECT_NAME}
+                    '''
                 }
             }
         }
 
-        stage('Verify JAR Artifact') {
+        stage('Verify JAR') {
             steps {
                 sh '''
-                    echo "Checking generated JAR..."
+                    echo "Checking packaged application..."
                     test -f target/opstrack-0.0.1-SNAPSHOT.jar
                     ls -lh target/opstrack-0.0.1-SNAPSHOT.jar
                 '''
             }
         }
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar',
+                                 fingerprint: true
+            }
+        }
     }
 
     post {
-        always {
-            junit(
-                allowEmptyResults: true,
-                testResults: '**/target/surefire-reports/*.xml'
-            )
-        }
-
         success {
-            archiveArtifacts(
-                artifacts: 'target/*.jar',
-                fingerprint: true
-            )
-
-            echo 'Pipeline completed successfully.'
-            echo 'JAR artifact is archived in Jenkins.'
+            echo 'OpsTrack CI pipeline completed successfully.'
         }
-
         failure {
-            echo 'Pipeline failed. Check the Console Output.'
+            echo 'OpsTrack CI pipeline failed. Check the stage logs.'
         }
-
-        cleanup {
+        always {
             echo 'Pipeline execution finished.'
         }
     }
