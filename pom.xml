@@ -6,6 +6,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Spring Boot parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -13,31 +14,57 @@
         <relativePath/>
     </parent>
 
+    <!-- Project metadata -->
     <groupId>com.opstrack</groupId>
     <artifactId>opstrack</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>opstrack</name>
-    <description>OpsTrack Spring Boot application</description>
+    <description>OpsTrack task management application</description>
 
+    <!-- Java version -->
     <properties>
         <java.version>21</java.version>
     </properties>
 
+    <!-- Dependencies -->
     <dependencies>
-        <!-- Web support and embedded Tomcat server -->
+
+        <!-- REST API and embedded web server -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Testing support -->
+        <!-- Database access with JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- H2 local database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- General testing support -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Spring MVC testing support for Spring Boot 4 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- Build plugins -->
     <build>
         <plugins>
             <plugin>

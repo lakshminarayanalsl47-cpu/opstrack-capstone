@@ -1,3 +1,4 @@
+
 package com.opstrack;
 
 import org.springframework.boot.SpringApplication;
@@ -6,8 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class OpstrackApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(OpstrackApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(OpstrackApplication.class, args);
+    }
 }
